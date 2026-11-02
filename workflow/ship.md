@@ -10,6 +10,7 @@
 6. Run `.agents/mainframe-workflow/scripts/check.sh`.
 7. Commit and push as the project's Commits and Git sections say.
 8. Open the PR.
+9. Once it merges, check its branch is gone from the remote. If it is not, delete it and turn on automatic deletion with `gh repo edit --delete-branch-on-merge`.
 
 ## PR body
 

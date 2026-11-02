@@ -506,8 +506,23 @@ expect_not "existing pointer prints nothing" contains "$output" "Add this line"
 
 new_project
 printf 'mine\n' > CLAUDE.md
-sync . >/dev/null 2>&1
+output=$(sync . 2>&1)
 expect "CLAUDE.md untouched" [ "$(cat CLAUDE.md)" = mine ]
+expect "CLAUDE.md without AGENTS.md gets a reminder" contains "$output" "does not point to AGENTS.md"
+
+new_project
+output=$(sync . 2>&1)
+expect "no CLAUDE.md gets a reminder" contains "$output" "@AGENTS.md"
+expect_not "the reminder creates nothing" [ -e CLAUDE.md ]
+
+new_project
+printf '@AGENTS.md\n' > CLAUDE.md
+output=$(sync . 2>&1)
+expect_not "CLAUDE.md with the pointer gets no reminder" contains "$output" "does not point to AGENTS.md"
+
+new_project
+output=$(sync . --agents agents 2>&1)
+expect_not "no reminder without claude skills" contains "$output" "does not point to AGENTS.md"
 
 new_project
 mkdir -p .agents/skills/own

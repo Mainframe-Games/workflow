@@ -31,10 +31,12 @@ Every piece of work begins with [Start](start.md) and ends with [Ship](ship.md).
 
 - Never commit to the default branch.
 - Keep history linear: squash or rebase.
+- Delete a PR's branch when it merges. Every repo turns on automatic deletion, so nobody has to remember.
 - Never bump versions by hand, deploy, or touch anything live unless asked.
 
 **Documents**
 
+- Project instructions live in `AGENTS.md`. Any agent-specific instruction file only points to it.
 - Code wins over docs about what exists. List conflicts rather than silently resolving them.
 - Link rather than restate.
 - Do not record what code or git already shows.
