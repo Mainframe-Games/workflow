@@ -22,7 +22,7 @@ Read [workflow/README.md](workflow/README.md) first. It holds the size table and
 Clone this repo at a tag, somewhere outside the project:
 
 ```bash
-git clone --depth 1 --branch v1.0.0 https://github.com/Mainframe-Games/workflow.git
+git clone --depth 1 --branch v1.1.0 https://github.com/Mainframe-Games/workflow.git
 ```
 
 Run sync against the project:
