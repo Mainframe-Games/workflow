@@ -37,7 +37,7 @@ Then, in the project:
 
 1. Commit what sync wrote.
 2. Fill in `.agents/workflow.md`: paths, gates and shipping rules.
-3. If `AGENTS.md` already existed, add the line sync printed. If the project has a `CLAUDE.md`, add the same line there; sync never touches it.
+3. Keep project instructions in `AGENTS.md`, not `CLAUDE.md`. If `AGENTS.md` already existed, add the line sync printed. Claude Code reads `CLAUDE.md` instead, so that file holds only `@AGENTS.md`, which imports it.
 4. Turn on automatic branch deletion: run `gh repo edit --delete-branch-on-merge` from the project.
 5. Add the check to CI. It needs history to find the merge base:
 
@@ -62,7 +62,7 @@ jobs:
 | `.claude/skills/mf-*/` | This repo | Replaced, and locked |
 | `.agents/workflow.md` | The project | Created if missing, never overwritten |
 | `AGENTS.md` | The project | Created if missing, otherwise the pointer line is printed |
-| `CLAUDE.md` | The project | Never touched |
+| `CLAUDE.md` | The project | Never touched. With `claude` skills, a reminder is printed if it does not mention `AGENTS.md` |
 
 `.agents/mainframe-workflow/.lock` records the version and a hash of every file this repo owns. Sync removes everything in the old lock before copying, so files dropped upstream go away. Sync warns if the source is not at the tag for its `VERSION`, or if any file it wrote is gitignored in the project.
 

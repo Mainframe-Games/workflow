@@ -36,6 +36,7 @@ Every piece of work begins with [Start](start.md) and ends with [Ship](ship.md).
 
 **Documents**
 
+- Project instructions live in `AGENTS.md`. Any agent-specific instruction file only points to it.
 - Code wins over docs about what exists. List conflicts rather than silently resolving them.
 - Link rather than restate.
 - Do not record what code or git already shows.

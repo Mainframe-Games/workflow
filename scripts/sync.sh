@@ -142,6 +142,11 @@ elif ! grep -q '\.agents/workflow\.md' "$project/AGENTS.md"; then
   grep '\.agents/workflow\.md' "$source_dir/templates/AGENTS.md"
 fi
 
+if $to_claude && ! grep -qs 'AGENTS\.md' "$project/CLAUDE.md"; then
+  echo "CLAUDE.md does not point to AGENTS.md. Keep instructions in AGENTS.md and put this in CLAUDE.md:"
+  echo "@AGENTS.md"
+fi
+
 {
   echo "# mainframe-workflow $version"
   printf '%s' "$installed" | LC_ALL=C sort | while IFS= read -r path; do
