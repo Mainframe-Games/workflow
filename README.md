@@ -1,6 +1,6 @@
 # Mainframe Workflow
 
-The development workflow for Mainframe Games projects: how work is sized, proposed, planned, decided and shipped. It is plain Markdown that a person or an agent can follow, thin skills that point at that Markdown, and one check script for CI. The check is the only enforcement.
+The development workflow for Mainframe Games projects: how work is sized, proposed, planned, decided and shipped. It is plain Markdown that a person or an agent can follow, thin skills that point at that Markdown, one check script for CI, and one script that has GitHub enforce the Git rules.
 
 **Agent support:** only Claude Code is tested. The Markdown is agent-neutral and `AGENTS.md` is the common entry point, but other agents are untested.
 
@@ -38,7 +38,7 @@ Then, in the project:
 1. Commit what sync wrote.
 2. Fill in `.agents/workflow.md`: paths, gates and shipping rules.
 3. Keep project instructions in `AGENTS.md`, not `CLAUDE.md`. If `AGENTS.md` already existed, add the line sync printed. Claude Code reads `CLAUDE.md` instead, so that file holds only `@AGENTS.md`, which imports it.
-4. Turn on automatic branch deletion: run `gh repo edit --delete-branch-on-merge` from the project.
+4. Protect the repo: run `bash workflow/scripts/protect.sh owner/repo`. See [what protect does](#what-protect-does).
 5. Add the check to CI. It needs history to find the merge base:
 
 ```yaml
@@ -65,6 +65,15 @@ jobs:
 | `CLAUDE.md` | The project | Never touched. With `claude` skills, a reminder is printed if it does not mention `AGENTS.md` |
 
 `.agents/mainframe-workflow/.lock` records the version and a hash of every file this repo owns. Sync removes everything in the old lock before copying, so files dropped upstream go away. Sync warns if the source is not at the tag for its `VERSION`, or if any file it wrote is gitignored in the project.
+
+## What protect does
+
+`scripts/protect.sh <owner/repo>` needs `gh`, signed in as a repo admin. It is safe to run again, and it is not copied into projects. It reads the result back from GitHub and fails if the rules are not active.
+
+- Adds a `mainframe-workflow` ruleset on the default branch: PRs required, linear history, squash or rebase only, no approvals needed, and nobody can bypass it.
+- Turns off merge commits and turns on deletion of merged branches.
+
+Other rulesets stay in place, but this one applies on top of them, so any bypass they grant stops working for these rules. Anything that pushes straight to the default branch, such as a release job, has to go through a PR instead. Merge commits already in history stay there: the rule holds from the day it is applied.
 
 ## Why a copy, not a submodule
 
@@ -94,7 +103,7 @@ Pull a newer tag here, run sync again, review the diff and commit. If the check 
 
 ## Develop this repo
 
-`tests/run.sh` builds throwaway git repos and runs both scripts end to end. CI runs it on Ubuntu and on macOS, whose `/bin/bash` 3.2 is the portability test, so the scripts avoid `mapfile`, associative arrays and `readlink -f`.
+`tests/run.sh` builds throwaway git repos and runs `sync.sh` and `check.sh` end to end. It runs `protect.sh` against a stand-in for `gh`, so the ruleset payload is only proven by applying it to a real repo. CI runs it on Ubuntu and on macOS, whose `/bin/bash` 3.2 is the portability test, so the scripts avoid `mapfile`, associative arrays and `readlink -f`.
 
 ## License
 

@@ -33,7 +33,7 @@ TODO: commit message style, and whether commits happen as work lands or at ship 
 
 ## Git
 
-TODO: branch naming, how PRs merge, and when to push.
+TODO: branch naming, whether PRs squash or rebase, and when to push.
 
 ## Human checks
 
