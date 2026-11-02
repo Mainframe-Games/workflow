@@ -38,7 +38,8 @@ Then, in the project:
 1. Commit what sync wrote.
 2. Fill in `.agents/workflow.md`: paths, gates and shipping rules.
 3. If `AGENTS.md` already existed, add the line sync printed. If the project has a `CLAUDE.md`, add the same line there; sync never touches it.
-4. Add the check to CI. It needs history to find the merge base:
+4. Turn on automatic branch deletion: run `gh repo edit --delete-branch-on-merge` from the project.
+5. Add the check to CI. It needs history to find the merge base:
 
 ```yaml
 on: pull_request
