@@ -29,9 +29,10 @@ Every piece of work begins with [Start](start.md) and ends with [Ship](ship.md).
 
 **Git**
 
-- Never commit to the default branch.
-- Keep history linear: squash or rebase.
-- Delete a PR's branch when it merges. Every repo turns on automatic deletion, so nobody has to remember.
+- The default branch changes only through a PR. No direct pushes, and no bypass for anyone.
+- Its history stays linear: squash or rebase, never a merge commit.
+- A PR's branch is deleted when it merges.
+- GitHub enforces these three in every repo, so nobody has to remember. A project's config cannot relax them. Set them up with `scripts/protect.sh` from the [workflow repo](https://github.com/Mainframe-Games/workflow#add-it-to-a-project).
 - Never bump versions by hand, deploy, or touch anything live unless asked.
 
 **Documents**

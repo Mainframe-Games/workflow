@@ -591,5 +591,67 @@ expect "warns when the source is past the tag" contains "$output" "source is not
 output=$("$BASH" "$source_copy/scripts/sync.sh" . 2>&1)
 expect_not "no warning at the tag" contains "$output" "source is not at tag"
 
+# protect.sh, against a stand-in for gh
+
+mkdir -p "$work/bin"
+cat > "$work/bin/gh" <<'EOF'
+#!/usr/bin/env bash
+# Logs each call, then answers as gh would. State comes from the environment.
+echo "$*" >> "$GH_LOG"
+case "$*" in
+  "repo edit "*) exit "$GH_EDIT_EXIT" ;;
+  "api --method "*) cat > "$GH_BODY" ;;
+  *"/rulesets --jq "*) echo "$GH_RULESET_ID" ;;
+  *"/rules/branches/"*) printf '%s\n' $GH_RULES ;;
+  *) echo main ;;
+esac
+EOF
+chmod +x "$work/bin/gh"
+
+export GH_LOG=$work/gh.log GH_BODY=$work/gh.body
+
+protect() { # [args]
+  : > "$GH_LOG"
+  output=$(PATH="$work/bin:$PATH" "$BASH" "$source_dir/scripts/protect.sh" "$@" 2>&1)
+  status=$?
+  calls=$(cat "$GH_LOG")
+}
+
+export GH_EDIT_EXIT=0 GH_RULESET_ID= GH_RULES="pull_request deletion required_linear_history"
+protect owner/repo
+expect "protect passes" [ "$status" -eq 0 ]
+expect "protect creates the ruleset" contains "$calls" "api --method POST repos/owner/repo/rulesets"
+expect "protect turns off merge commits" contains "$calls" "--enable-merge-commit=false"
+expect "protect deletes merged branches" contains "$calls" "--delete-branch-on-merge"
+body=$(cat "$GH_BODY")
+expect "ruleset covers the default branch" contains "$body" '"~DEFAULT_BRANCH"'
+expect "ruleset requires linear history" contains "$body" '"required_linear_history"'
+expect "ruleset requires PRs" contains "$body" '"pull_request"'
+expect "ruleset has no bypass" contains "$body" '"bypass_actors": []'
+expect_not "ruleset refuses merge commits" contains "$body" '"merge"'
+
+export GH_RULESET_ID=42
+protect owner/repo
+expect "protect updates an existing ruleset" contains "$calls" "api --method PUT repos/owner/repo/rulesets/42"
+expect_not "protect does not add a second ruleset" contains "$calls" "--method POST"
+
+export GH_RULES="pull_request"
+protect owner/repo
+expect "protect fails if a rule is not active" [ "$status" -eq 1 ]
+expect "protect names the missing rule" contains "$output" "required_linear_history is not active on main"
+export GH_RULES="pull_request required_linear_history"
+
+export GH_EDIT_EXIT=1
+protect owner/repo
+expect_not "protect stops when gh fails" [ "$status" -eq 0 ]
+expect_not "protect writes nothing after a failure" contains "$calls" "--method"
+export GH_EDIT_EXIT=0
+
+protect repo
+expect "protect needs owner/repo" [ "$status" -eq 2 ]
+expect "protect prints usage" contains "$output" "usage: protect.sh"
+
+expect_not "protect is not vendored" [ -e "$fixture/.agents/mainframe-workflow/scripts/protect.sh" ]
+
 echo "$passed passed, $failed failed"
 [ "$failed" -eq 0 ]
